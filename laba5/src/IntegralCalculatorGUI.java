@@ -9,11 +9,11 @@ import java.util.Scanner;
 
 public class IntegralCalculatorGUI extends JFrame {
 
-    private DefaultTableModel tableModel;
-    private JTable table;
-    private JTextField lowerLimitField;
-    private JTextField upperLimitField;
-    private JTextField stepField;
+    private final DefaultTableModel tableModel;
+    private final JTable table;
+    private final JTextField lowerLimitField;
+    private final JTextField upperLimitField;
+    private final JTextField stepField;
     private ArrayList<RecIntegral> integralList;
 
 
@@ -30,9 +30,9 @@ public class IntegralCalculatorGUI extends JFrame {
 
         table = new JTable(tableModel);
 
-        lowerLimitField = new JTextField(2);
-        upperLimitField = new JTextField(2);
-        stepField = new JTextField(2);
+        lowerLimitField = new JTextField(6);
+        upperLimitField = new JTextField(6);
+        stepField = new JTextField(6);
         integralList = new ArrayList<>();
 
 
@@ -142,8 +142,23 @@ public class IntegralCalculatorGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
-                    Thread thread = new Thread(new CalculateIntegral(tableModel, table));
+                    Thread thread = new Thread(new CalculateIntegral(tableModel, table.getSelectedRow()));
                     thread.start();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Please enter valid numerical values.");
+                }
+            }
+        });
+
+        JButton calculateAllButton = new JButton("Calculate All");
+        calculateAllButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    for(int i = 0; i < table.getRowCount(); i++) {
+                        Thread thread = new Thread(new CalculateIntegral(tableModel, i));
+                        thread.start();
+                    }
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Please enter valid numerical values.");
                 }
@@ -187,6 +202,7 @@ public class IntegralCalculatorGUI extends JFrame {
         inputPanel.add(addButton);
         inputPanel.add(deleteButton);
         inputPanel.add(calculateButton);
+        inputPanel.add(calculateAllButton);
         inputPanel.add(clearButton);
         inputPanel.add(fillButton);
 
