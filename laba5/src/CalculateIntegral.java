@@ -1,21 +1,26 @@
 import javax.swing.table.DefaultTableModel;
 
 public class CalculateIntegral implements Runnable {
-    private final DefaultTableModel tableModel;
-    private final int selectedRow;
-    public CalculateIntegral(DefaultTableModel tableModel, int selectedRow){
-        this.tableModel = tableModel;
-        this.selectedRow = selectedRow;
+    private final double lowerLimit;
+    private final double upperLimit;
+    private final double step;
+    private static double integralResult = 0.0;
+    public CalculateIntegral(double lowerLimit, double upperLimit, double step){
+        this.lowerLimit = lowerLimit;
+        this.upperLimit = upperLimit;
+        this.step = step;
     }
+    public static double getIntegralResult() {
+        return integralResult;
+    }
+    public static void setIntegralResultNull(){
+        integralResult = 0.0;
+    }
+
     @Override
     public void run(){
-        double lowerLimit = Double.parseDouble(tableModel.getValueAt(selectedRow, 0).toString());
-        double upperLimit = Double.parseDouble(tableModel.getValueAt(selectedRow, 1).toString());
-        double step = Double.parseDouble(tableModel.getValueAt(selectedRow, 2).toString());
-
-        double integralResult = IntegralCalculatorGUI.calculateIntegral(lowerLimit, upperLimit, step);
-        if (selectedRow != -1) {
-            tableModel.setValueAt(integralResult, selectedRow, 3);
-        }
+        double temp = IntegralCalculatorGUI.calculateIntegral(lowerLimit, upperLimit, step);
+        integralResult += temp;
+        System.out.println(temp);
     }
 }

@@ -4,6 +4,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -30,9 +31,9 @@ public class IntegralCalculatorGUI extends JFrame {
 
         table = new JTable(tableModel);
 
-        lowerLimitField = new JTextField(6);
-        upperLimitField = new JTextField(6);
-        stepField = new JTextField(6);
+        lowerLimitField = new JTextField(2);
+        upperLimitField = new JTextField(2);
+        stepField = new JTextField(2);
         integralList = new ArrayList<>();
 
 
@@ -141,26 +142,38 @@ public class IntegralCalculatorGUI extends JFrame {
         calculateButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                try {
-                    Thread thread = new Thread(new CalculateIntegral(tableModel, table.getSelectedRow()));
-                    thread.start();
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Please enter valid numerical values.");
-                }
-            }
-        });
+                double lowerLimit, upperLimit, step;
 
-        JButton calculateAllButton = new JButton("Calculate All");
-        calculateAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
                 try {
-                    for(int i = 0; i < table.getRowCount(); i++) {
-                        Thread thread = new Thread(new CalculateIntegral(tableModel, i));
+                    int selectedRow = table.getSelectedRow();
+                    lowerLimit = Double.parseDouble(tableModel.getValueAt(selectedRow, 0).toString());
+                    upperLimit = Double.parseDouble(tableModel.getValueAt(selectedRow, 1).toString());
+                    step = Double.parseDouble(tableModel.getValueAt(selectedRow, 2).toString());
+
+                    int numThread = 9;
+                    double stepRun = (upperLimit - lowerLimit) / numThread;
+                    ArrayList<Thread> threadArrayList = new ArrayList<>();
+
+                    for (int i = 0; i < numThread; i++){
+                        double upperLimitTemp = lowerLimit + stepRun;
+                        Thread thread = new Thread(new CalculateIntegral(lowerLimit, upperLimitTemp, step));
+                        threadArrayList.add(thread);
                         thread.start();
+                        lowerLimit = upperLimitTemp;
                     }
+                    for (Thread thread : threadArrayList){
+                        thread.join();
+                    }
+                    //double integralResult = calculateIntegral(lowerLimit, upperLimit, step);
+                    if (selectedRow != -1) {
+                        tableModel.setValueAt(CalculateIntegral.getIntegralResult(), selectedRow, 3);
+                        CalculateIntegral.setIntegralResultNull();
+                    }
+
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Please enter valid numerical values.");
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
                 }
             }
         });
@@ -202,7 +215,6 @@ public class IntegralCalculatorGUI extends JFrame {
         inputPanel.add(addButton);
         inputPanel.add(deleteButton);
         inputPanel.add(calculateButton);
-        inputPanel.add(calculateAllButton);
         inputPanel.add(clearButton);
         inputPanel.add(fillButton);
 
